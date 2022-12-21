@@ -1,0 +1,173 @@
+---
+title: "Question 2"
+output: word_document
+date: "2022-12-10"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+pacman::p_load(tidyverse,tseries)
+```
+
+```{r}
+dat <- read_csv("yield.csv")
+
+rff <- dat$Yield
+
+rfree <- (1+rff/100)^(1/12) - 1
+
+x <- get.hist.quote(instrument = "^GSPC",
+
+                    start = "2015-12-01",
+
+                    end = "2020-12-31",
+
+                    quote = "AdjClose",
+
+                    compression = "m")
+
+sp500 <- as.vector(x)
+
+n <- length(sp500)
+
+
+sp500_m_ret <- (sp500[-1] - sp500[-n])/sp500[-n]
+
+d <- tibble(SP500 = sp500_m_ret - rfree)
+
+d
+
+
+mcd <- get.hist.quote(instrument = "MCD",
+
+                    start = "2015-12-01",
+
+                    end = "2020-12-31",
+
+                    quote = "AdjClose",
+
+                    compression = "m")
+
+mcd_m <- as.vector(mcd)
+
+n <- length(mcd_m)
+
+ 
+
+mcd_m_ret <- (mcd_m[-1] - mcd_m[-n]) / mcd_m[-n]
+
+ 
+
+stks <- tibble(MCD = mcd_m_ret - rfree)
+
+stks
+
+ 
+
+bax <- get.hist.quote(instrument = "BAX",
+
+                    start = "2015-12-01",
+
+                    end = "2020-12-31",
+
+                    quote = "AdjClose",
+
+                    compression = "m")
+
+bax_m <- as.vector(bax)
+
+n <- length(bax_m)
+
+bax_m_ret <- (bax_m[-1] - bax_m[-n]) / bax_m[-n]
+
+stks <- stks %>%
+
+  mutate(BAX = bax_m_ret - rfree)
+
+stks
+
+ 
+
+mar <- get.hist.quote(instrument = "MAR",
+
+                    start = "2015-12-01",
+
+                    end = "2020-12-31",
+
+                    quote = "AdjClose",
+
+                    compression = "m")
+
+mar_m <- as.vector(mar)
+
+n <- length(mar_m)
+
+mar_m_ret <- (mar_m[-1] - mar_m[-n]) / mar_m[-n]
+
+stks <- stks %>%
+
+  mutate(MAR = mar_m_ret - rfree)
+
+stks
+
+ 
+
+mrk <- get.hist.quote(instrument = "MRK",
+
+                    start = "2015-12-01",
+
+                    end = "2020-12-31",
+
+                    quote = "AdjClose",
+
+                    compression = "m")
+
+mrk_m <- as.vector(mrk)
+
+n <- length(mrk_m)
+
+mrk_m_ret <- (mrk_m[-1] - mrk_m[-n]) / mrk_m[-n]
+
+stks <- stks %>%
+
+  mutate(MRK = mrk_m_ret - rfree)
+
+stks
+
+ 
+
+nke <- get.hist.quote(instrument = "NKE",
+
+                    start = "2015-12-01",
+
+                    end = "2020-12-31",
+
+                    quote = "AdjClose",
+
+                    compression = "m")
+
+nke_m <- as.vector(nke)
+
+n <- length(nke_m)
+
+nke_m_ret <- (nke_m[-1] - nke_m[-n]) / nke_m[-n]
+
+stks <- stks %>%
+
+  mutate(NKE = nke_m_ret - rfree)
+
+stks
+
+
+#Estimate Betas
+
+stks.mm <- lm(as.matrix(stks) ~ SP500, data=d)
+
+stks.mm$coefficients
+
+stks.beta <- stks.mm$coefficients[2,]
+
+stks.beta
+
+```
+
